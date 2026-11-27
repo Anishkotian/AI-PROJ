@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Save The Villain</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Inter:wght@400;600&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main id="app">
+
+    <!-- ========== MAIN MENU ========== -->
+    <section id="screen-menu" class="screen active">
+      <p class="eyebrow">An AI Strategy Game</p>
+      <h1 class="title">SAVE THE <span>VILLAIN</span></h1>
+      <p class="subtitle">The hero is coming. Only you can stop him.</p>
+
+      <nav class="menu-buttons">
+        <button class="btn btn-primary" data-target="game">Play Game</button>
+        <button class="btn" data-target="howto">How to Play</button>
+        <button class="btn" data-target="algorithms">AI Algorithms</button>
+        <button class="btn" data-target="settings">Settings</button>
+      </nav>
+    </section>
+
+    <!-- ========== HOW TO PLAY ========== -->
+    <section id="screen-howto" class="screen">
+      <div class="panel">
+        <h2>How to Play</h2>
+        <ul class="info-list">
+          <li><strong>Goal:</strong> keep the villain alive until the countdown (in turns) reaches zero.</li>
+          <li><strong>Move</strong> your assistant with the arrow keys or WASD.</li>
+          <li><strong>Pick a tool</strong> (Trap, Obstacle, Door) and click a tile in range. Keys 1, 2, 3 also select tools.</li>
+          <li><strong>Each turn</strong> you have a few actions. Press <strong>End Turn</strong> (or E) and the hero moves one tile.</li>
+          <li><strong>Traps</strong> make the hero lose turns when he steps on them, then the trap is used up.</li>
+          <li><strong>Doors</strong> can be opened or closed. The hero recalculates and looks for another route.</li>
+          <li><strong>You cannot seal the villain in.</strong> The game refuses a move that leaves no route.</li>
+          <li><strong>Green line:</strong> the hero's planned path. <strong>Orange dashed:</strong> his previous path. <strong>Blue wash:</strong> explored nodes.</li>
+          <li><strong>You lose</strong> when the hero reduces the villain's health to zero.</li>
+        </ul>
+        <button class="btn" data-target="menu">&larr; Back</button>
+      </div>
+    </section>
+
+    <!-- ========== AI ALGORITHMS ========== -->
+    <section id="screen-algorithms" class="screen">
+      <div class="panel">
+        <h2>AI Algorithms</h2>
+
+        <div class="algo-card">
+          <h3>A* Search</h3>
+          <p class="formula">f(n) = g(n) + h(n)</p>
+          <p>
+            <strong>g(n)</strong>: cost already paid from the start. <strong>h(n)</strong>: estimated
+            cost to the goal (Manhattan distance). <strong>f(n)</strong>: total estimated cost.
+            It always expands the lowest f, avoids expensive traps when a cheap detour exists,
+            and finds the shortest path.
+          </p>
+        </div>
+
+        <div class="algo-card">
+          <h3>Greedy Best-First Search</h3>
+          <p class="formula">f(n) = h(n)</p>
+          <p>
+            Only looks at the estimated distance to the goal. Often explores fewer nodes,
+            but ignores cost already paid, so it can walk into traps and return longer paths.
+          </p>
+        </div>
+
+        <button class="btn" data-target="menu">&larr; Back</button>
+      </div>
+    </section>
+
+    <!-- ========== SETTINGS ========== -->
+    <section id="screen-settings" class="screen">
+      <div class="panel">
+        <h2>Settings</h2>
+
+        <label class="setting-row">
+          <span>Hero AI strategy</span>
+          <select id="setting-ai">
+            <option value="astar">A* Search</option>
+            <option value="greedy">Greedy Best-First</option>
+          </select>
+        </label>
+
+        <label class="setting-row">
+          <span>Show explored nodes</span>
+          <input type="checkbox" id="setting-explored" />
+        </label>
+
+        <label class="setting-row">
+          <span>Show FPS counter</span>
+          <input type="checkbox" id="setting-fps" />
+        </label>
+
+        <p class="hint" id="settings-saved"></p>
+        <button class="btn" data-target="menu">&larr; Back</button>
+      </div>
+    </section>
+
+    <!-- ========== GAME ========== -->
+    <section id="screen-game" class="screen">
+      <div class="game-header">
+        <h2 id="level-title">Level</h2>
+        <div class="header-actions">
+          <select id="game-level" class="select-small"></select>
+          <button class="btn btn-small" id="btn-reset">Reset</button>
+          <button class="btn btn-small" data-target="menu">&larr; Menu</button>
+        </div>
+      </div>
+
+      <div class="game-layout">
+        <div class="board-col">
+          <div class="canvas-frame">
+            <canvas id="game-canvas"></canvas>
+          </div>
+          <p class="hint status-line" id="game-status"></p>
+
+          <div class="toolbar">
+            <button class="btn btn-small tool" data-tool="trap">1 Trap</button>
+            <button class="btn btn-small tool" data-tool="obstacle">2 Obstacle</button>
+            <button class="btn btn-small tool" data-tool="door">3 Door</button>
+            <button class="btn btn-small btn-primary" id="btn-end-turn">End Turn (E)</button>
+          </div>
+        </div>
+
+        <aside class="side-col">
+          <div class="side-panel">
+            <h3>Status</h3>
+            <dl class="stats">
+              <dt>Turn</dt><dd id="hud-turn">-</dd>
+              <dt>Turns left</dt><dd id="hud-left">-</dd>
+              <dt>Actions</dt><dd id="hud-actions">-</dd>
+              <dt>Traps left</dt><dd id="hud-traps">-</dd>
+              <dt>Obstacles left</dt><dd id="hud-obstacles">-</dd>
+              <dt>Door controls</dt><dd id="hud-doors">-</dd>
+              <dt>Villain health</dt><dd id="hud-health" class="hearts">-</dd>
+              <dt>Hero AI</dt><dd id="hud-algo">-</dd>
+            </dl>
+            <label class="inline-row">
+              <span>Switch hero AI</span>
+              <select id="game-ai" class="select-small">
+                <option value="astar">A* Search</option>
+                <option value="greedy">Greedy Best-First</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="side-panel">
+            <h3>AI Panel</h3>
+            <dl class="stats">
+              <dt>Algorithm</dt><dd id="ai-algo">-</dd>
+              <dt>Hero position</dt><dd id="ai-hero">-</dd>
+              <dt>Target</dt><dd id="ai-target">-</dd>
+              <dt>Hero state</dt><dd id="ai-state">-</dd>
+              <dt>Nodes explored</dt><dd id="ai-nodes">-</dd>
+              <dt>Path length</dt><dd id="ai-length">-</dd>
+              <dt>Path cost</dt><dd id="ai-cost">-</dd>
+              <dt>Recalculations</dt><dd id="ai-recalc">-</dd>
+            </dl>
+            <p class="path-label">Selected path</p>
+            <p class="path-text" id="ai-path">-</p>
+            <label class="inline-row">
+              <span>Show explored nodes</span>
+              <input type="checkbox" id="ai-show-explored" />
+            </label>
+            <div class="legend">
+              <span><i class="sw sw-path"></i>new path</span>
+              <span><i class="sw sw-old"></i>old path</span>
+              <span><i class="sw sw-explored"></i>explored</span>
+            </div>
+          </div>
+
+          <div class="side-panel">
+            <h3>Compare A* vs Greedy</h3>
+            <button class="btn btn-small" id="btn-compare">Run comparison</button>
+            <div id="compare-result"></div>
+          </div>
+        </aside>
+      </div>
+
+      <!-- Victory / defeat overlay -->
+      <div id="overlay" class="overlay hidden">
+        <div id="overlay-box" class="overlay-box">
+          <h2 id="overlay-title"></h2>
+          <p id="overlay-text"></p>
+          <div class="overlay-buttons">
+            <button class="btn btn-small btn-primary hidden" id="btn-overlay-next">Next Level</button>
+            <button class="btn btn-small" id="btn-overlay-retry">Retry</button>
+            <button class="btn btn-small" data-target="menu">Menu</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="fps" class="fps hidden"></div>
+    </section>
+
+  </main>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
